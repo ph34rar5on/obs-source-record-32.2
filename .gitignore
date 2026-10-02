@@ -11,3 +11,7 @@
 # ignore generated files
 *.generated.*
 **/.Brewfile.lock.json
+
+# ignore files written into the source tree by CMake
+/version.h
+/*.rc

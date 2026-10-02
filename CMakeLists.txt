@@ -6,7 +6,7 @@ else()
   cmake_minimum_required(VERSION 3.18)
 endif()
 
-project(source-record VERSION 0.4.8)
+project(source-record VERSION 0.5.0)
 set(PROJECT_FULL_NAME "Source Record")
 
 # Set new UUIDs when you start to create a new plugin.
@@ -73,11 +73,20 @@ if(BUILD_OUT_OF_TREE)
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${DATA_OUT_DIR})
 	setup_plugin_target(${PROJECT_NAME})
 else()
-    target_include_directories(${PROJECT_NAME} PRIVATE
-        "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
+	# In-tree build.
 	if(OBS_CMAKE_VERSION VERSION_GREATER_EQUAL 3.0.0)
+		# OBS::frontend-api exports its own include directory, nothing to add.
 		set_target_properties_obs(${PROJECT_NAME} PROPERTIES FOLDER "plugins/exeldro" PREFIX "")
 	else()
+		# OBS 32 moved the frontend API headers from UI/obs-frontend-api to
+		# frontend/api. Older trees only have the UI/ layout.
+		if(EXISTS "${CMAKE_SOURCE_DIR}/UI/obs-frontend-api/obs-frontend-api.h")
+			target_include_directories(${PROJECT_NAME} PRIVATE
+				"${CMAKE_SOURCE_DIR}/UI/obs-frontend-api")
+		else()
+			target_include_directories(${PROJECT_NAME} PRIVATE
+				"${CMAKE_SOURCE_DIR}/frontend/api")
+		endif()
 		set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "plugins/exeldro")
 		setup_plugin_target(${PROJECT_NAME})
 	endif()

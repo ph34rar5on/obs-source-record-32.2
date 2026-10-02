@@ -54,11 +54,11 @@ function Setup-Obs {
         $CmakeArgs = @(
             '-G', $CmakeGenerator
             "-DCMAKE_SYSTEM_VERSION=${script:PlatformSDK}"
-            "-DCMAKE_GENERATOR_PLATFORM=$(if (${script:Target} -eq "x86") { "Win32" } else { "x64" })"
+            "-DCMAKE_GENERATOR_PLATFORM=$(if (${script:Target} -eq "arm64") { "ARM64" } else { "x64" })"
             "-DCMAKE_BUILD_TYPE=${script:Configuration}"
             "-DQT_VERSION=${script:QtVersion}"
             '-DENABLE_PLUGINS=OFF'
-            '-DENABLE_UI=OFF'
+            '-DENABLE_FRONTEND=OFF'
             '-DENABLE_SCRIPTING=OFF'
             "-DCMAKE_INSTALL_PREFIX:PATH=$(Resolve-Path -Path "${ProjectRoot}/../obs-build-dependencies/${DepsPath}")"
             "-DCMAKE_PREFIX_PATH:PATH=$(Resolve-Path -Path "${ProjectRoot}/../obs-build-dependencies/${DepsPath}")"
@@ -78,7 +78,7 @@ function Setup-Obs {
         }
 
         Invoke-External cmake --build plugin_build_${script:Target} @CmakeArgs -t obs-frontend-api
-        Invoke-External cmake --install plugin_build_${script:Target} @CmakeArgs --component obs_libraries
+        Invoke-External cmake --install plugin_build_${script:Target} @CmakeArgs --component Development
     }
     Pop-Location -Stack BuildTemp
 }

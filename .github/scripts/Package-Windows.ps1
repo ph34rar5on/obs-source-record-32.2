@@ -2,7 +2,7 @@
 param(
     [ValidateSet('Debug', 'RelWithDebInfo', 'Release', 'MinSizeRel')]
     [string] $Configuration = 'RelWithDebInfo',
-    [ValidateSet('x86', 'x64', 'x86+x64')]
+    [ValidateSet('x64', 'arm64', 'x64+arm64')]
     [string] $Target,
     [switch] $BuildInstaller = $false
 )
@@ -57,7 +57,7 @@ function Package {
     Remove-Item @RemoveArgs
 
     if ( ( $BuildInstaller ) ) {
-        if ( $Target -eq 'x86+x64' ) {
+        if ( $Target -eq 'x64+arm64' ) {
             $IsccCandidates = Get-ChildItem -Recurse -Path '*.iss'
 
             if ( $IsccCandidates.length -gt 0 ) {

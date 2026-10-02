@@ -8,21 +8,21 @@ on:
 
 env:
   PLUGIN_NAME: source-record
-  OBS_VERSION: 29.0.0-beta1
+  OBS_VERSION: 32.2.2
 jobs:
   macos:
     name: macOS
-    runs-on: macos-latest
+    runs-on: macos-26
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64, arm64, universal]
+        arch: [x86_64, arm64]
     outputs:
       commitHash: ${{ steps.setup.outputs.commitHash }}
     env:
       CODESIGN_IDENT: '-'
       CODESIGN_IDENT_INSTALLER: ''
-      MACOSX_DEPLOYMENT_TARGET: '10.15'  
+      MACOSX_DEPLOYMENT_TARGET: '13.0'  
     defaults:
       run:
         shell: zsh {0}
@@ -133,7 +133,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ubuntu: ['ubuntu-22.04']
+        ubuntu: ['ubuntu-24.04']
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.1
@@ -151,16 +151,37 @@ jobs:
       - name: Fetch Git Tags
         run: git fetch --prune --tags --unshallow
       - name: 'Install dependencies'
-        run: CI/linux/01_install_dependencies.sh --disable-pipewire
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build pkg-config \
+            libglib2.0-dev extra-cmake-modules lsb-release dh-cmake \
+            libcurl4-openssl-dev libmbedtls-dev uthash-dev libsimde-dev \
+            libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev \
+            libswresample-dev libswscale-dev \
+            libjansson-dev nlohmann-json3-dev libwebsocketpp-dev libasio-dev \
+            libx11-dev libx11-xcb-dev libxcb1-dev libxcb-randr0-dev libxcb-shm0-dev \
+            libxcb-xinerama0-dev libxcb-composite0-dev libxcb-xfixes0-dev libxinerama-dev \
+            libgles2-mesa-dev libgl1-mesa-dev libglvnd-dev libegl1-mesa-dev \
+            libwayland-dev libxkbcommon-dev libxshmfence-dev \
+            libasound2-dev libpulse-dev libspeexdsp-dev libsndio-dev libudev-dev libv4l-dev \
+            libx264-dev libx265-dev libfdk-aac-dev libfontconfig-dev libfreetype6-dev \
+            libva-dev libdrm-dev libpci-dev libvpl-dev libvpl2 libv4l2-dev \
+            libluajit-5.1-dev python3-dev
       - name: 'Configure'
         shell: bash
         run: |
           mkdir ./build
-          cmake -S . -B "./build" -G Ninja -DCMAKE_BUILD_TYPE="RelWithDebInfo" -DLINUX_PORTABLE=OFF -DENABLE_AJA=OFF -DENABLE_NEW_MPEGTS_OUTPUT=OFF -DBUILD_CAPTIONS=OFF -DWITH_RTMPS=OFF -DBUILD_BROWSER=OFF -DBUILD_VIRTUALCAM=OFF -DBUILD_VST=OFF -DENABLE_PIPEWIRE=OFF -DENABLE_SCRIPTING=OFF
+          cmake -S . -B "./build" -G Ninja -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
+            -DENABLE_FRONTEND=OFF \
+            -DENABLE_PLUGINS=OFF \
+            -DENABLE_SCRIPTING=OFF \
+            -DENABLE_BROWSER=OFF
       - name: 'Build'
         shell: bash
         run: |
-          cmake --build "./build"
+          cmake --build "./build" -t obs-frontend-api ${{ env.PLUGIN_NAME }}
       - name: 'Package'
         shell: bash
         run: |
@@ -178,23 +199,21 @@ jobs:
           path: '*.tar.gz'
   windows-build:
     name: 'Windows Build'
-    runs-on: [windows-2022]
+    runs-on: [windows-2025-vs2026]
     strategy:
       fail-fast: true
       matrix:
-        target: [x64, x86]
+        target: [x64, arm64]
         include:
           - target: x64
             cmake_build: 'x64'
-            deps_ext: '64'
-          - target: x86
-            cmake_build: 'Win32'
-            deps_ext: '32'
+            arch_dir: '64bit'
+          - target: arm64
+            cmake_build: 'ARM64'
+            arch_dir: '64bit'
     env:
-      QT_VERSION: '6.3.1'
-      CMAKE_GENERATOR: "Visual Studio 17 2022"
-      CMAKE_SYSTEM_VERSION: "10.0.18363.657"
-      WINDOWS_DEPS_VERSION: '2022-08-02'
+      CMAKE_GENERATOR: "Visual Studio 18 2026"
+      CMAKE_SYSTEM_VERSION: "10.0.26100.0"
     steps:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
@@ -213,30 +232,23 @@ jobs:
         run: echo add_subdirectory(${{ env.PLUGIN_NAME }}) > plugins/CMakeLists.txt
       - name: Fetch Git Tags
         run: git fetch --prune --tags --unshallow
-      - name: 'Install prerequisite: QT'
-        run: |
-          curl -kLO https://github.com/obsproject/obs-deps/releases/download/${{ env.WINDOWS_DEPS_VERSION }}/windows-deps-qt6-${{ env.WINDOWS_DEPS_VERSION }}-${{ matrix.target }}.zip -f --retry 5 -C -
-          7z x windows-deps-qt6-${{ env.WINDOWS_DEPS_VERSION }}-${{ matrix.target }}.zip -o"${{ github.workspace }}/cmbuild/deps"
-      - name: 'Install prerequisite: Pre-built dependencies'
-        run: |
-          curl -kLO https://github.com/obsproject/obs-deps/releases/download/${{ env.WINDOWS_DEPS_VERSION }}/windows-deps-${{ env.WINDOWS_DEPS_VERSION }}-${{ matrix.target }}.zip -f --retry 5 -C -
-          7z x windows-deps-${{ env.WINDOWS_DEPS_VERSION }}-${{ matrix.target }}.zip -o"${{ github.workspace }}/cmbuild/deps"
       - name: Configure
         run: |
           mkdir ./package
           mkdir ./installer
           mkdir ./installer/media
           mkdir ./build
-          cmake -S . -B "${{ github.workspace }}/build" -G"${{ env.CMAKE_GENERATOR }}" -DCMAKE_PREFIX_PATH:PATH="${{ github.workspace }}/cmbuild/deps" -A"${{ matrix.cmake_build }}" -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DBUILD_BROWSER=false -DBUILD_VST=false -DBUILD_VIRTUALCAM=false -DBUILD_CAPTIONS=false -DCOMPILE_D3D12_HOOK=false -DENABLE_SCRIPTING=false -DDepsPath="${{ github.workspace }}/cmbuild/deps" -DDepsPath${{ matrix.deps_ext }}="${{ github.workspace }}/cmbuild/deps" -DQTDIR="${{ github.workspace }}/cmbuild/deps/qt6" -DCOPIED_DEPENDENCIES=FALSE -DCOPY_DEPENDENCIES=TRUE -DENABLE_PLUGINS=TRUE -DDISABLE_PLUGINS=FALSE -DENABLE_BROWSER=FALSE -DENABLE_WEBSOCKET=FALSE
+          cmake -S . -B "${{ github.workspace }}/build" -G"${{ env.CMAKE_GENERATOR }}" -A"${{ matrix.cmake_build }}" -DCMAKE_SYSTEM_VERSION="${{ env.CMAKE_SYSTEM_VERSION }}" -DCMAKE_BUILD_TYPE="RelWithDebInfo" -DENABLE_FRONTEND=OFF -DENABLE_PLUGINS=OFF -DENABLE_SCRIPTING=OFF -DENABLE_BROWSER=OFF
       - name: 'Build'
-        run: msbuild /m /p:Configuration=RelWithDebInfo .\build\obs-studio.sln
+        run: cmake --build "${{ github.workspace }}/build" --config RelWithDebInfo -t obs-frontend-api ${{ env.PLUGIN_NAME }}
       - name: Package
         if: success()
         run: |
           $env:FILE_NAME="${{ env.PLUGIN_NAME }}-${{ github.sha }}-windows-${{ matrix.target }}"
           echo "FILE_NAME=${env:FILE_NAME}" >> ${env:GITHUB_ENV}
-          robocopy .\build\rundir\RelWithDebInfo\obs-plugins\${{ matrix.deps_ext }}bit\ .\package\obs-plugins\${{ matrix.deps_ext }}bit ${{ env.PLUGIN_NAME }}.* /E /XF .gitignore
-          robocopy .\build\rundir\RelWithDebInfo\data\obs-plugins\${{ env.PLUGIN_NAME }}\ .\package\data\obs-plugins\${{ env.PLUGIN_NAME }}\ /E /XF .gitignore
+          mkdir .\package\obs-plugins\${{ matrix.arch_dir }}
+          robocopy .\build\plugins\${{ env.PLUGIN_NAME }}\RelWithDebInfo .\package\obs-plugins\${{ matrix.arch_dir }} ${{ env.PLUGIN_NAME }}.dll
+          robocopy .\plugins\${{ env.PLUGIN_NAME }}\data .\package\data\obs-plugins\${{ env.PLUGIN_NAME }} /E /XF .gitignore
           copy .\build\plugins\${{ env.PLUGIN_NAME }}\installer.iss .\installer\installer.iss
           robocopy .\plugins\${{ env.PLUGIN_NAME}}\media\ .\installer\media\ /E /XF .gitignore
           exit 0
@@ -264,19 +276,19 @@ jobs:
           $env:FILE_DATE=(Get-Date -UFormat "%F")
           $env:FILE_NAME="${{ env.PLUGIN_NAME }}-${env:FILE_DATE}-${{ github.sha }}-windows"
           echo "FILE_NAME=${env:FILE_NAME}" >> ${env:GITHUB_ENV}
-          $env:FILE_NAME_X86="${{ env.PLUGIN_NAME }}-${{ github.sha }}-windows-x86"
-          echo "FILE_NAME_X86=${env:FILE_NAME_X86}" >> ${env:GITHUB_ENV}
           $env:FILE_NAME_X64="${{ env.PLUGIN_NAME }}-${{ github.sha }}-windows-x64"
           echo "FILE_NAME_X64=${env:FILE_NAME_X64}" >> ${env:GITHUB_ENV}
-      - name: Retrieve x86 build
-        uses: actions/download-artifact@v4.1.2
-        with:
-          name: '${{ env.FILE_NAME_X86 }}'
-          path: ./package
+          $env:FILE_NAME_ARM64="${{ env.PLUGIN_NAME }}-${{ github.sha }}-windows-arm64"
+          echo "FILE_NAME_ARM64=${env:FILE_NAME_ARM64}" >> ${env:GITHUB_ENV}
       - name: Retrieve x64 build
         uses: actions/download-artifact@v4.1.2
         with:
           name: '${{ env.FILE_NAME_X64 }}'
+          path: ./package
+      - name: Retrieve arm64 build
+        uses: actions/download-artifact@v4.1.2
+        with:
+          name: '${{ env.FILE_NAME_ARM64 }}'
           path: ./package
       - name: Retrieve installer files
         uses: actions/download-artifact@v4.1.2
@@ -301,4 +313,4 @@ jobs:
       - name: Remove temp artifacts
         uses: geekyeggo/delete-artifact@v4.1.0
         with:
-          name: "${{ env.FILE_NAME_X86 }}\n${{ env.FILE_NAME_X64 }}"
+          name: "${{ env.FILE_NAME_X64 }}\n${{ env.FILE_NAME_ARM64 }}"

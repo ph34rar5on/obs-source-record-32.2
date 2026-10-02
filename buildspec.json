@@ -1,21 +1,21 @@
 {
     "dependencies": {
         "obs-studio": {
-            "version": "29.0.0-beta1",
+            "version": "32.2.2",
             "repository": "https://github.com/obsproject/obs-studio.git",
             "branch": "master",
-            "hash": "dd61943ddfc4036e1e0507f50395157303cce6eb"
+            "hash": "ba2f32bdf791005443988a4955e963663e16b1ed"
         },
         "prebuilt": {
-            "version": "2022-08-02",
+            "version": "2026-07-15",
             "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
             "label": "Pre-built obs-deps",
             "hashes": {
-                "macos-x86_64": "7637e52305e6fc53014b5aabd583f1a4490b1d97450420e977cae9a336a29525",
-                "macos-arm64": "755e0fa69b17a3ae444e1befa9d91d77e3cafe628fbd1c6333686091826595cd",
-                "macos-universal": "de057e73e6fe0825664c258ca2dd6798c41ae580bf4d896e1647676a4941934a",
-                "windows-x64": "2192d8ce780c4281b807cd457994963669e5202659ecd92f19b54c3e7d0c1915",
-                "windows-x86": "9f8582ab5891b000869d6484ea591add9fbac9f1c91b56c7b85fdfd56a261c1b"
+                "macos-x86_64": "d301f9866f049f8667d45ffbf741b3074af5a19f50a68f4021a3aae9c12ef5cc",
+                "macos-arm64": "52805d9ccb2417aee124551a36d988d96129afafb6114a2e0512e6d0af546020",
+                "macos-universal": "4ecb4c598dfa853168df6c2a0c4e0ffec8495a81fbd1ba051ef88ecd5e0f7e53",
+                "windows-x64": "6f90e9598fa10cff5ad23cdcfae49b87868c07bf896b02cd464582b4ce2f2ba9",
+                "windows-arm64": "4e7d6835ae36dbc569bf6f88646cb6c4f1f0319b5c13d9d37ba3d19b25b1e240"
             }
         },
         "qt5": {
@@ -35,49 +35,49 @@
             }
         },
         "qt6": {
-            "version": "2022-08-02",
+            "version": "2026-07-15",
             "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
             "label": "Pre-built Qt6",
             "hashes": {
-                "macos-x86_64": "a83f72a11023b03b6cb2dc365f0a66ad9df31163bbb4fe2df32d601856a9fad3",
-                "macos-arm64": "2f30af90c049670a5660656adbb440668aa1b0567f75a5f29e1def9108928403",
-                "macos-universal": "252e6684f43ab9c6f262c73af739e2296ce391b998da2c4ee04c254aaa07db18",
-                "windows-x64": "e5509b54196a3f935250cc4b9c54160c8e588fd0f92bc078a2a64f9d9e2e4e93",
-                "windows-x86": "24fc03bef153a0e027c1479e42eb08097a4ea1d70a4710825be0783d0626cb0d"
+                "macos-x86_64": "5e137db187f9acb420d7ea079b4fe60e0a0d23e9e1c80a2b9597130a7e6923a5",
+                "macos-arm64": "184538177d854664c56e8524e1afb2b6156083579426f3193e90c6cf4d514583",
+                "macos-universal": "d4b8058612a7067e44b2205fe7925ee24e9ec6b15ac8c29d3e6230c70030b102",
+                "windows-x64": "7c7f985711d80467bdc1795b6592275a27d5b0e5a2c7a61db1f2c1d08d6a5579",
+                "windows-arm64": "6d5047a04cad3ecc2615bf8b3df6eb22ec953a458b6cd89253bf131ee4981b90"
             },
             "pdb-hashes": {
-                "windows-x64": "60e5b1d2bc4d7c431bc05f14e3b1e85e088788c372fa85f58717cd6c49555a46",
-                "windows-x86": "f34d1a89fc85d92913bd6c7f75ec5c28471d74db708c98161100bc8b75f8fc63"
+                "windows-x64": "8f92ba6b4620843bd99e07a1ac9783d9d95bf10bcda67e8fac425d944b60344e",
+                "windows-arm64": "644c7ada01792337dd0f92f247e0cbeac4e64b91b119fe1abc37ebb16436b965"
             }
         }
     },
     "platformConfig": {
         "macos-x86_64": {
             "qtVersion": 6,
-            "deploymentTarget": "10.15"
+            "deploymentTarget": "13.0"
         },
         "macos-arm64": {
             "qtVersion": 6,
-            "deploymentTarget": "11.0"
+            "deploymentTarget": "13.0"
         },
         "macos-universal": {
             "qtVersion": 6,
-            "deploymentTarget": "10.15"
+            "deploymentTarget": "13.0"
         },
         "windows-x64": {
             "qtVersion": 6,
-            "visualStudio": "Visual Studio 17 2022",
-            "platformSDK": "10.0.20348.0"
+            "visualStudio": "Visual Studio 18 2026",
+            "platformSDK": "10.0.26100.0"
         },
-        "windows-x86": {
+        "windows-arm64": {
             "qtVersion": 6,
-            "visualStudio": "Visual Studio 17 2022",
-            "platformSDK": "10.0.20348.0"
+            "visualStudio": "Visual Studio 18 2026",
+            "platformSDK": "10.0.26100.0"
         },
         "linux-x86_64": {
             "qtVersion": 6
         }
     },
     "name": "source-record",
-    "version": "0.4.8"
+    "version": "0.5.0"
 }

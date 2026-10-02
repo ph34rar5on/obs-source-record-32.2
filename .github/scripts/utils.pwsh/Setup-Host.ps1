@@ -94,10 +94,10 @@ function Setup-Host {
 }
 
 function Get-HostArchitecture {
-    $Host64Bit = [System.Environment]::Is64BitOperatingSystem
-    $HostArchitecture = ('x86', 'x64')[$Host64Bit]
-
-    return $HostArchitecture
+    switch ( [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture ) {
+        'Arm64' { return 'arm64' }
+        default { return 'x64' }
+    }
 }
 
 $script:HostArchitecture = Get-HostArchitecture
