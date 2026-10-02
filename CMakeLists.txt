@@ -32,6 +32,12 @@ else()
 endif()
   
 if(OS_WINDOWS)
+	if(BUILD_OUT_OF_TREE)
+		# In-tree this target is provided by the OBS build tree. Stand-alone
+		# builds have to locate it themselves, otherwise linking fails with
+		# LNK1181 (w32-pthreads.lib).
+		find_package(w32-pthreads REQUIRED)
+	endif()
 	get_filename_component(ISS_FILES_DIR "${CMAKE_BINARY_DIR}\\..\\package" ABSOLUTE)
 	file(TO_NATIVE_PATH "${ISS_FILES_DIR}" ISS_FILES_DIR)
 	get_filename_component(ISS_PACKAGE_DIR "${CMAKE_PACKAGE_PREFIX}\\.." ABSOLUTE)
@@ -45,7 +51,7 @@ if(OS_WINDOWS)
 	target_sources(${PROJECT_NAME} PRIVATE 
 		${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.rc)
 	target_link_libraries(${PROJECT_NAME}
-		w32-pthreads)
+		OBS::w32-pthreads)
 elseif(OS_MACOS)
 		set(MACOS_BUNDLEID "com.exeldro.${PROJECT_NAME}")
 		set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
